@@ -1,0 +1,17 @@
+﻿# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local runtime data
+log/
+server.log
+
+# User uploads/content
+uploads/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

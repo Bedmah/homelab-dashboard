@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Bedmah.Local Admin</title><link id="app-favicon-admin" rel="icon" href="">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+:root{
+  --text:#f2f2f2;
+  --muted:#a9a9a9;
+  --line:rgba(255,255,255,.14);
+  --card:linear-gradient(90deg, rgba(18,18,18,.95), rgba(36,36,36,.92));
+  --panel:rgba(10,10,10,.82);
+  --btn:rgba(255,255,255,.12);
+  --accent:#e5e5e5;
+  --bg-overlay: radial-gradient(circle at 40% -20%, rgba(255,255,255,.04), transparent 52%), linear-gradient(180deg, #050505, #0b0b0b 60%, #050505);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:"Manrope","Segoe UI",Tahoma,sans-serif;
+  min-height:100vh;
+  background:#05070b;
+}
+body[data-theme="light"]{
+  --text:#121212;
+  --muted:#5d5d5d;
+  --line:rgba(0,0,0,.14);
+  --card:linear-gradient(90deg, rgba(242,242,242,.96), rgba(224,224,224,.94));
+  --panel:rgba(255,255,255,.84);
+  --btn:rgba(0,0,0,.07);
+  --accent:#111111;
+  --bg-overlay: radial-gradient(circle at 40% -20%, rgba(0,0,0,.03), transparent 55%), linear-gradient(180deg, #f4f4f4, #ececec 60%, #f3f3f3);
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:var(--bg-overlay);
+  background-size:cover;
+  filter:contrast(1.08) saturate(.9);
+  z-index:-2;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 2px, transparent 2px 5px),
+             radial-gradient(circle at 50% 0%, rgba(255,255,255,.06), transparent 55%);
+  mix-blend-mode:soft-light;
+  z-index:-1;
+}
+.shell{width:min(1360px,95vw); margin:22px auto;}
+.topbar{
+  display:flex; gap:10px; align-items:center; justify-content:space-between;
+  padding:10px 14px; border:1px solid var(--line); border-radius:14px;
+  background:var(--panel); backdrop-filter:blur(8px);
+}
+.brand{font-size:14px; letter-spacing:.4px; color:#cfd8e6; font-weight:700;}
+.search{flex:1; max-width:440px;}
+input,select,textarea,button{
+  border:1px solid var(--line); border-radius:10px; padding:9px 11px;
+  background:rgba(8,10,14,.82); color:var(--text); font-size:14px; outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:rgba(255,255,255,.34)}
+button{cursor:pointer; background:var(--btn); transition:all .16s ease}
+button:hover{transform:translateY(-1px); background:rgba(255,255,255,.2)}
+a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); border-radius:10px; padding:8px 11px; background:var(--btn)}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.1);color:#d8deea}
+@media (max-width:760px){
+  .shell{width:96vw; margin:10px auto;}
+  .topbar{flex-wrap:wrap;}
+  .search{max-width:none; width:100%;}
+}
+</style>
+
+<style>
+.layout{display:grid;grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px; backdrop-filter:blur(9px)}
+h2{margin:0 0 10px;font-size:14px;color:#dce3ef;font-weight:600}
+.row,.row1{display:grid;gap:8px;margin-bottom:8px}
+.row{grid-template-columns:1fr 1fr}
+.row1{grid-template-columns:1fr}
+.row > *, .row1 > *{min-width:0}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.bg-actions-primary{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.bg-actions-secondary{display:flex;gap:8px;flex-wrap:wrap}
+.list{display:grid;gap:8px}
+.item{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(0,0,0,.22);
+}
+.item.dragging{opacity:.45}
+.drag{cursor:grab;color:#a4b0c1;font-size:18px;line-height:1}
+.svc-name{font-size:15px;line-height:1.2}
+.meta{font-size:12px;color:var(--muted);line-height:1.25}
+.svc-buttons{display:flex;gap:6px}
+.svc-buttons button{padding:7px 10px}
+textarea{width:100%;min-height:220px;resize:vertical}
+.log-output{
+  width:100%;
+  min-height:260px;
+  max-height:540px;
+  resize:vertical;
+  font-family:Consolas, "Courier New", monospace;
+  font-size:12px;
+  line-height:1.4;
+}
+.bg-help{font-size:12px;color:var(--muted)}
+.panel-wide{grid-column:1 / -1}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .shell{width:95vw;margin:10px auto}
+  .topbar{padding:10px;align-items:flex-start}
+  h2{font-size:15px}
+  .row{grid-template-columns:1fr}
+  input,select,textarea,button{font-size:16px}
+  .actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .actions button,.actions .btn{width:100%}
+  .bg-actions-primary,.bg-actions-secondary{display:grid;grid-template-columns:1fr;gap:8px}
+  .bg-actions-primary button,.bg-actions-secondary button{width:100%}
+  .item{
+    grid-template-columns:auto 1fr;
+    grid-template-areas:
+      "drag text"
+      "btns btns";
+    align-items:start;
+    gap:8px;
+    padding:10px;
+  }
+  .item .drag{grid-area:drag; padding-top:2px}
+  .item .svc-text{grid-area:text}
+  .item .svc-buttons{
+    grid-area:btns;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    width:100%;
+  }
+  .item .svc-buttons button{width:100%}
+  .meta{word-break:break-word}
+  textarea{min-height:160px}
+}
+</style>
+</head><body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">Bedmah.Local / Admin</div>
+    <a class="btn" href="/" target="_blank" rel="noopener">Открыть Dashboard</a>
+  </div>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>Сервисы</h2>
+      <input type="hidden" id="service-id">
+      <div class="row"><input id="name" placeholder="name"><input id="url" placeholder="url"></div>
+      <div class="row"><input id="icon" placeholder="icon URL"><input id="group" placeholder="group"></div>
+      <div class="row"><input id="tags" placeholder="tags через запятую"><label style="display:flex;align-items:center;gap:8px;padding:9px 0"><input id="new-tab" type="checkbox">new_tab</label></div>
+      <div class="row1"><input id="icon-file" type="file" accept="image/*"></div>
+      <div class="actions">
+        <button id="save-service">Сохранить</button>
+        <button id="reset-form" type="button">Сброс</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Брендинг</h2>
+      <div class="row1"><input id="brand-page-title" placeholder="Заголовок вкладки браузера (page title)"></div>
+      <div class="row1"><input id="brand-hero-title" placeholder="Главная надпись на сайте"></div>
+      <div class="row"><input id="brand-hero-symbol" placeholder="Символ сверху (например ✻)"><input id="brand-favicon-url" placeholder="Favicon URL"></div>
+      <div class="row1"><input id="brand-favicon-file" type="file" accept="image/*,.ico"></div>
+      <div class="actions"><button id="save-branding">Сохранить брендинг</button></div>
+
+    </section>
+
+    <section class="panel">
+      <h2>Список / сортировка</h2>
+      <div id="service-list" class="list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Фон</h2>
+      <div class="row"><select id="bg-mode"><option value="preset">preset</option><option value="image">image</option></select><select id="bg-preset"><option value="midnight">midnight</option><option value="obsidian">obsidian</option><option value="graphite">graphite</option><option value="deepsea">deepsea</option></select></div>
+      <div class="row1"><input id="bg-image-url" placeholder="URL фонового изображения"></div>
+      <div class="row1"><input id="bg-file" type="file" accept="image/*"></div>
+      <div class="row1"><input id="bg-saved-new" placeholder="Добавить URL в сохраненные"></div>
+      <div class="row1"><select id="bg-saved"><option value="">Сохраненные фоны</option></select></div>
+      <div class="bg-actions-primary"><button id="save-bg">Сохранить фон</button></div>
+      <div class="bg-actions-secondary">
+        <button id="use-saved-bg" type="button">Применить выбранный</button>
+        <button id="add-saved-bg" type="button">Добавить в сохраненные</button>
+        <button id="remove-saved-bg" type="button">Удалить выбранный</button>
+      </div>
+      <div class="bg-help">Загруженные фоны сохраняются в списке и доступны для повторного выбора.</div>
+    </section>
+
+    <section class="panel panel-wide">
+      <h2>Raw JSON</h2>
+      <textarea id="raw-json"></textarea>
+      <div class="actions" style="margin-top:8px"><button id="load-raw">Загрузить</button><button id="save-raw">Сохранить</button></div>
+    </section>
+
+    <section class="panel panel-wide">
+      <h2>Логи</h2>
+      <div class="row">
+        <select id="log-file">
+          <option value="app.log">app.log</option>
+          <option value="access.log">access.log</option>
+        </select>
+        <input id="log-lines" type="number" min="50" max="2000" step="50" value="400" placeholder="Количество строк">
+      </div>
+      <div class="actions" style="margin-top:8px">
+        <button id="load-logs" type="button">Обновить логи</button>
+      </div>
+      <textarea id="log-output" class="log-output" readonly></textarea>
+    </section>
+
+  </div>
+</div>
+<script>
+const PRESET_BG={
+ midnight:'radial-gradient(circle at 40% -20%, rgba(255,255,255,.06), transparent 50%), linear-gradient(180deg, #07090d, #0b0e13 60%, #07090d)',
+ obsidian:'radial-gradient(circle at 50% -10%, rgba(160,160,160,.08), transparent 45%), linear-gradient(180deg,#050505,#111 60%,#050505)',
+ graphite:'radial-gradient(circle at 50% 0%, rgba(180,180,180,.06), transparent 55%), linear-gradient(180deg,#0a0b0f,#1b1f25 65%,#0a0b0f)',
+ deepsea:'radial-gradient(circle at 45% -10%, rgba(75,117,145,.16), transparent 50%), linear-gradient(180deg,#051019,#0a1c2a 65%,#06111a)'
+};
+let services=[];
+let settings={background:{mode:'preset',preset:'midnight',image_url:'',saved_images:[]}, branding:{page_title:'Bedmah.Local',hero_title:'Bedmah.local',hero_symbol:'✻',favicon_url:''}};
+const q=s=>document.querySelector(s);
+
+async function api(url,method='GET',data=null,headers={}){
+  const opt={method,headers:{...headers}};
+  if(data!==null){
+    if(data instanceof FormData){opt.body=data;}
+    else{opt.headers['Content-Type']='application/json'; opt.body=JSON.stringify(data);} }
+  const res=await fetch(url,opt);
+  const payload=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(payload.error||'Request failed');
+  return payload;
+}
+
+function applyBackground(){
+  const bg=settings.background||{};
+  if(bg.mode==='image'&&bg.image_url){
+    document.documentElement.style.setProperty('--bg-overlay',`linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url("${bg.image_url}")`);
+  }else{
+    document.documentElement.style.setProperty('--bg-overlay',PRESET_BG[bg.preset]||PRESET_BG.midnight);
+  }
+}
+
+function setFavicon(url){
+  const link = document.getElementById('app-favicon-admin');
+  if(!link) return;
+  link.href = url || '';
+}
+
+function applyBranding(){
+  const b = settings.branding || {};
+  document.title = (b.page_title || 'Bedmah.Local') + ' / Admin';
+  setFavicon(b.favicon_url || '');
+}
+
+function fillForm(s=null){
+  q('#service-id').value=s?.id||'';
+  q('#name').value=s?.name||'';
+  q('#url').value=s?.url||'';
+  q('#icon').value=s?.icon||'';
+  q('#group').value=s?.group||'';
+  q('#tags').value=(s?.tags||[]).join(', ');
+  q('#new-tab').checked=!!s?.new_tab;
+  q('#icon-file').value='';
+}
+
+function renderList(){
+  const host=q('#service-list');
+  host.innerHTML=services.map(s=>`<div class="item" draggable="true" data-id="${s.id}">
+    <div class="drag">⋮⋮</div>
+    <div class="svc-text"><div class="svc-name">${s.name}</div><div class="meta">${s.group||'General'} | ${(s.tags||[]).join(', ')}</div></div>
+    <div class="svc-buttons"><button data-a="e" data-id="${s.id}">Ред.</button><button data-a="d" data-id="${s.id}">Удал.</button></div>
+  </div>`).join('');
+
+  host.querySelectorAll('button[data-a="e"]').forEach(b=>b.onclick=()=>{const s=services.find(x=>x.id===b.dataset.id);if(s)fillForm(s);});
+  host.querySelectorAll('button[data-a="d"]').forEach(b=>b.onclick=async()=>{if(!confirm('Удалить сервис?'))return; await api(`/api/services/${b.dataset.id}`,'DELETE'); await loadServices();});
+  setupDnD();
+}
+
+function setupDnD(){
+  const host=q('#service-list'); let drag=null;
+  host.querySelectorAll('.item').forEach(it=>{
+    it.addEventListener('dragstart',()=>{drag=it; it.classList.add('dragging');});
+    it.addEventListener('dragend',async()=>{it.classList.remove('dragging'); drag=null; const ids=[...host.querySelectorAll('.item')].map(x=>x.dataset.id); await api('/api/reorder','POST',{ids}); await loadServices();});
+    it.addEventListener('dragover',e=>{e.preventDefault(); if(!drag||drag===it)return; const r=it.getBoundingClientRect(); const after=e.clientY>r.top+r.height/2; if(after)it.after(drag); else it.before(drag);});
+  });
+}
+
+async function loadServices(){
+  services=await api('/api/services');
+  renderList();
+  q('#raw-json').value=JSON.stringify(services,null,2);
+}
+
+async function loadSettings(){
+  settings=await api('/api/settings');
+  q('#brand-page-title').value=settings.branding?.page_title||'Bedmah.Local';
+  q('#brand-hero-title').value=settings.branding?.hero_title||'Bedmah.local';
+  q('#brand-hero-symbol').value=settings.branding?.hero_symbol||'✻';
+  q('#brand-favicon-url').value=settings.branding?.favicon_url||'';
+  q('#bg-mode').value=settings.background.mode||'preset';
+  q('#bg-preset').value=settings.background.preset||'midnight';
+  q('#bg-image-url').value=settings.background.image_url||'';
+  renderSavedBackgrounds();
+  applyBranding();
+  applyBackground();
+}
+
+function renderSavedBackgrounds(){
+  const select = q('#bg-saved');
+  const list = (settings.background?.saved_images || []).filter(Boolean);
+  select.innerHTML = '<option value="">Сохраненные фоны</option>' + list.map((url, i) => {
+    const short = url.split('/').pop() || url;
+    return `<option value="${url}">#${i + 1} ${short}</option>`;
+  }).join('');
+}
+
+function uniqueList(items){
+  const out = [];
+  for(const item of items || []){
+    const v = String(item || '').trim();
+    if(!v || out.includes(v)) continue;
+    out.push(v);
+  }
+  return out;
+}
+
+async function saveSettingsPatch(patch){
+  const payload = {
+    background: { ...(settings.background || {}), ...(patch.background || {}) },
+    branding: { ...(settings.branding || {}), ...(patch.branding || {}) }
+  };
+  settings = await api('/api/settings', 'POST', payload);
+  applyBranding();
+  applyBackground();
+  renderSavedBackgrounds();
+  return settings;
+}
+
+async function upload(endpoint,file){
+  const fd=new FormData(); fd.append('file',file);
+  const res=await fetch(endpoint,{method:'POST',body:fd});
+  const payload=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(payload.error||'Upload failed');
+  return payload.url;
+}
+
+async function saveService(){
+  let icon=q('#icon').value.trim();
+  if(q('#icon-file').files[0]) icon=await upload('/api/upload-icon',q('#icon-file').files[0]);
+
+  const payload={
+    name:q('#name').value.trim(),
+    url:q('#url').value.trim(),
+    icon,
+    group:q('#group').value.trim()||'General',
+    tags:q('#tags').value,
+    new_tab:q('#new-tab').checked
+  };
+
+  const id=q('#service-id').value;
+  if(id) await api(`/api/services/${id}`,'PUT',payload);
+  else await api('/api/services','POST',payload);
+  fillForm();
+  await loadServices();
+}
+
+async function saveBackground(){
+  let imageUrl=q('#bg-image-url').value.trim();
+  if(q('#bg-file').files[0]) imageUrl=await upload('/api/upload-background',q('#bg-file').files[0]);
+  const saved = uniqueList([imageUrl, ...(settings.background?.saved_images || [])]);
+  await saveSettingsPatch({background:{mode:q('#bg-mode').value,preset:q('#bg-preset').value,image_url:imageUrl,saved_images:saved}});
+  q('#bg-image-url').value=settings.background.image_url||'';
+  q('#bg-file').value='';
+}
+
+async function saveBranding(){
+  let faviconUrl=q('#brand-favicon-url').value.trim();
+  if(q('#brand-favicon-file').files[0]) faviconUrl=await upload('/api/upload-favicon',q('#brand-favicon-file').files[0]);
+  await saveSettingsPatch({branding:{
+    page_title:q('#brand-page-title').value.trim()||'Bedmah.Local',
+    hero_title:q('#brand-hero-title').value.trim()||'Bedmah.local',
+    hero_symbol:q('#brand-hero-symbol').value.trim()||'✻',
+    favicon_url:faviconUrl
+  }});
+
+  q('#brand-favicon-url').value=settings.branding?.favicon_url||'';
+  q('#brand-favicon-file').value='';
+}
+
+async function addSavedBackground(){
+  const inputUrl = q('#bg-saved-new').value.trim();
+  const fallback = q('#bg-image-url').value.trim();
+  const toAdd = inputUrl || fallback;
+  if(!toAdd) return;
+  const saved = uniqueList([toAdd, ...(settings.background?.saved_images || [])]);
+  await saveSettingsPatch({background:{saved_images:saved}});
+  q('#bg-saved-new').value='';
+}
+
+async function removeSavedBackground(){
+  const selected = q('#bg-saved').value;
+  if(!selected) return;
+  const saved = uniqueList((settings.background?.saved_images || []).filter(x => x !== selected));
+  const nextImageUrl = (settings.background?.image_url === selected) ? '' : (settings.background?.image_url || '');
+  await saveSettingsPatch({background:{saved_images:saved,image_url:nextImageUrl}});
+  if(nextImageUrl === '') q('#bg-image-url').value='';
+}
+
+async function loadRaw(){
+  const raw=await api('/api/raw');
+  q('#raw-json').value=raw.raw||'[]';
+}
+
+async function saveRaw(){
+  await api('/api/raw','POST',{raw:q('#raw-json').value});
+  await loadServices();
+}
+
+async function loadLogs(){
+  const file = (q('#log-file').value || 'app.log').trim();
+  const lines = Math.max(50, Math.min(2000, Number(q('#log-lines').value || 400)));
+  q('#log-lines').value = String(lines);
+  const payload = await api(`/api/logs?file=${encodeURIComponent(file)}&lines=${lines}`);
+  if(payload.files && Array.isArray(payload.files) && !payload.files.includes(file)){
+    q('#log-file').value = payload.selected || 'app.log';
+  }
+  const text = (payload.lines || []).join('\n');
+  q('#log-output').value = text || '[Лог пуст]';
+  q('#log-output').scrollTop = q('#log-output').scrollHeight;
+}
+
+function wire(){
+  q('#save-service').addEventListener('click',()=>saveService().catch(e=>alert(e.message)));
+  q('#reset-form').addEventListener('click',()=>fillForm());
+  q('#save-branding').addEventListener('click',()=>saveBranding().catch(e=>alert(e.message)));
+  q('#save-bg').addEventListener('click',()=>saveBackground().catch(e=>alert(e.message)));
+  q('#add-saved-bg').addEventListener('click',()=>addSavedBackground().catch(e=>alert(e.message)));
+  q('#remove-saved-bg').addEventListener('click',()=>removeSavedBackground().catch(e=>alert(e.message)));
+  q('#use-saved-bg').addEventListener('click',()=>{
+    const selected = q('#bg-saved').value;
+    if(!selected) return;
+    q('#bg-image-url').value = selected;
+    q('#bg-mode').value = 'image';
+    saveBackground().catch(e=>alert(e.message));
+  });
+  q('#load-raw').addEventListener('click',()=>loadRaw().catch(e=>alert(e.message)));
+  q('#save-raw').addEventListener('click',()=>saveRaw().catch(e=>alert(e.message)));
+  q('#load-logs').addEventListener('click',()=>loadLogs().catch(e=>alert(e.message)));
+}
+
+async function boot(){
+  wire();
+  fillForm();
+  await Promise.all([loadServices(),loadSettings(),loadLogs()]);
+}
+boot().catch(e=>alert(e.message));
+</script>
+</body></html>

@@ -1,0 +1,14 @@
+﻿{
+  "background": {
+    "mode": "preset",
+    "preset": "midnight",
+    "image_url": "",
+    "saved_images": []
+  },
+  "branding": {
+    "page_title": "Bedmah.Local",
+    "hero_title": "Bedmah.local",
+    "hero_symbol": "✻",
+    "favicon_url": ""
+  }
+}

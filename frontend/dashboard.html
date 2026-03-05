@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Bedmah.Local</title><link id="app-favicon" rel="icon" href="">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+:root{
+  --text:#f2f2f2;
+  --muted:#a9a9a9;
+  --line:rgba(255,255,255,.14);
+  --card:linear-gradient(90deg, rgba(18,18,18,.95), rgba(36,36,36,.92));
+  --panel:rgba(10,10,10,.82);
+  --btn:rgba(255,255,255,.12);
+  --accent:#e5e5e5;
+  --bg-overlay: radial-gradient(circle at 40% -20%, rgba(255,255,255,.04), transparent 52%), linear-gradient(180deg, #050505, #0b0b0b 60%, #050505);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:"Manrope","Segoe UI",Tahoma,sans-serif;
+  min-height:100vh;
+  background:#05070b;
+}
+body[data-theme="light"]{
+  --text:#121212;
+  --muted:#5d5d5d;
+  --line:rgba(0,0,0,.14);
+  --card:linear-gradient(90deg, rgba(242,242,242,.96), rgba(224,224,224,.94));
+  --panel:rgba(255,255,255,.84);
+  --btn:rgba(0,0,0,.07);
+  --accent:#111111;
+  --bg-overlay: radial-gradient(circle at 40% -20%, rgba(0,0,0,.03), transparent 55%), linear-gradient(180deg, #f4f4f4, #ececec 60%, #f3f3f3);
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:var(--bg-overlay);
+  background-size:cover;
+  filter:contrast(1.08) saturate(.9);
+  z-index:-2;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 2px, transparent 2px 5px),
+             radial-gradient(circle at 50% 0%, rgba(255,255,255,.06), transparent 55%);
+  mix-blend-mode:soft-light;
+  z-index:-1;
+}
+.shell{width:min(1360px,95vw); margin:22px auto;}
+.topbar{
+  display:flex; gap:10px; align-items:center; justify-content:space-between;
+  padding:10px 14px; border:1px solid var(--line); border-radius:14px;
+  background:var(--panel); backdrop-filter:blur(8px);
+}
+.brand{font-size:14px; letter-spacing:.4px; color:#cfd8e6; font-weight:700;}
+.search{flex:1; max-width:440px;}
+input,select,textarea,button{
+  border:1px solid var(--line); border-radius:10px; padding:9px 11px;
+  background:rgba(8,10,14,.82); color:var(--text); font-size:14px; outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:rgba(255,255,255,.34)}
+button{cursor:pointer; background:var(--btn); transition:all .16s ease}
+button:hover{transform:translateY(-1px); background:rgba(255,255,255,.2)}
+a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); border-radius:10px; padding:8px 11px; background:var(--btn)}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.1);color:#d8deea}
+@media (max-width:760px){
+  .shell{width:96vw; margin:10px auto;}
+  .topbar{flex-wrap:wrap;}
+  .search{max-width:none; width:100%;}
+}
+</style>
+
+<style>
+.dashboard-shell{
+  width:min(100%, 1920px);
+  max-width:1920px;
+  margin:18px auto 34px;
+  padding:0 18px;
+  box-sizing:border-box;
+}
+.hero{text-align:center; margin:34px 0 22px;}
+.hero-mark{font-size:32px; line-height:1; color:rgba(255,255,255,.82);}
+.hero h1{
+  margin:12px 0 0;
+  font-family:"Space Grotesk","Manrope","Segoe UI",sans-serif;
+  font-size:60px;
+  letter-spacing:.2px;
+  font-weight:700;
+  color:#fff;
+}
+.controls{margin:20px auto 0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+.controls .search{flex:1; min-width:260px; max-width:520px;}
+.controls .search input{width:100%;}
+.groups{display:grid; gap:14px; margin-top:8px;}
+.groups > section{display:block; width:100%;}
+.group-title{
+  width:fit-content;
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  margin:0 auto 8px;
+  text-align:center;
+}
+.cards{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  justify-content:center;
+}
+.card{
+  width:180px;
+  height:202px;
+  display:grid;
+  grid-template-rows:1fr 70px;
+  align-items:stretch;
+  gap:0;
+  padding:0;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:12px;
+  background:rgba(0,0,0,.58);
+  overflow:hidden;
+  transition:transform .14s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  cursor:pointer;
+}
+.card:hover{transform:translateY(-2px); background:rgba(255,255,255,.05); border-color:#fff; box-shadow:0 8px 18px rgba(0,0,0,.38);}
+.card-top{
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg, rgba(25,25,25,.88), rgba(15,15,15,.9));
+}
+.icon{
+  width:108px;
+  height:108px;
+  border-radius:16px;
+  object-fit:contain;
+  background:transparent;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+}
+.card-top .icon{
+  font-size:0;
+  color:transparent;
+}
+.icon-placeholder{
+  background:rgba(255,255,255,.08);
+  font-size:30px;
+  color:#d7d7d7;
+}
+.card-bottom{
+  padding:6px 8px;
+  background:linear-gradient(180deg, rgba(66,66,66,.88), rgba(56,56,56,.92));
+  border-top:1px solid rgba(255,255,255,.15);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:4px;
+}
+.name{color:#fff;font-size:18px;line-height:1.15;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.meta{display:flex;gap:4px;justify-content:center;overflow:hidden;margin-top:0;}
+.meta .tag{font-size:11px;line-height:14px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.2);color:#f3f3f3;max-width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.empty{padding:20px 12px; text-align:center; color:var(--muted)}
+body[data-theme="light"] .hero h1{color:#151515}
+body[data-theme="light"] .hero-mark{color:rgba(0,0,0,.62)}
+body[data-theme="light"] .card{background:rgba(255,255,255,.82); border-color:rgba(0,0,0,.26)}
+body[data-theme="light"] .card:hover{background:#fff;border-color:#000}
+body[data-theme="light"] .card-top{background:linear-gradient(180deg, rgba(248,248,248,.95), rgba(238,238,238,.96))}
+body[data-theme="light"] .card-bottom{background:linear-gradient(180deg, rgba(224,224,224,.96), rgba(212,212,212,.96)); border-top-color:rgba(0,0,0,.12)}
+body[data-theme="light"] .name{color:#151515}
+body[data-theme="light"] .meta .tag{color:#1b1b1b;background:rgba(0,0,0,.12)}
+@media (max-width:760px){
+  .dashboard-shell{width:100%; max-width:none; margin:10px auto 18px; padding:0 12px}
+  .hero{margin:10px 0 10px}
+  .hero-mark{font-size:24px}
+  .hero h1{font-size:28px}
+  .controls{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    justify-content:stretch;
+  }
+  .controls .search{min-width:100%; max-width:none; grid-column:1 / -1}
+  .controls .search input, .controls button, .controls a.btn{width:100%; text-align:center}
+  .cards{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; justify-content:stretch}
+  .card{width:auto; height:214px; grid-template-rows:1fr 78px}
+  .icon{width:110px;height:110px}
+  .name{font-size:18px}
+  .meta{display:flex; gap:4px; margin-top:4px}
+  .meta .tag{font-size:11px; line-height:14px; padding:0 6px; max-width:66px}
+}
+@media (max-width:420px){
+  .cards{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; justify-content:stretch}
+  .card{width:auto; height:194px; grid-template-rows:1fr 68px}
+  .icon{width:96px;height:96px}
+  .name{font-size:16px}
+  .meta{display:flex; gap:3px; margin-top:3px}
+  .meta .tag{font-size:10px; line-height:13px; padding:0 5px; max-width:58px}
+}
+</style>
+</head><body>
+<div class="dashboard-shell">
+  <div class="hero">
+    <div id="hero-symbol" class="hero-mark">✻</div>
+    <h1 id="hero-title">Bedmah.local</h1>
+    <div class="controls">
+      <div class="search"><input id="search" placeholder="Поиск по названию / группе / тегам"></div>
+      <button id="theme-toggle" type="button">Светлая тема</button>
+      <a class="btn" href="/admin" target="_blank" rel="noopener">Админка</a>
+    </div>
+  </div>
+  <div id="app" class="groups"></div>
+</div>
+<script>
+const PRESET_BG={
+ midnight:'radial-gradient(circle at 40% -20%, rgba(255,255,255,.06), transparent 50%), linear-gradient(180deg, #07090d, #0b0e13 60%, #07090d)',
+ obsidian:'radial-gradient(circle at 50% -10%, rgba(160,160,160,.08), transparent 45%), linear-gradient(180deg,#050505,#111 60%,#050505)',
+ graphite:'radial-gradient(circle at 50% 0%, rgba(180,180,180,.06), transparent 55%), linear-gradient(180deg,#0a0b0f,#1b1f25 65%,#0a0b0f)',
+ deepsea:'radial-gradient(circle at 45% -10%, rgba(75,117,145,.16), transparent 50%), linear-gradient(180deg,#051019,#0a1c2a 65%,#06111a)'
+};
+let services=[];
+let settings={background:{mode:'preset',preset:'midnight',image_url:''}, branding:{page_title:'Bedmah.Local',hero_title:'Bedmah.local',hero_symbol:'✻',favicon_url:''}};
+const q=s=>document.querySelector(s);
+const THEME_KEY='bedmah_theme';
+
+function applyBackground(){
+  const bg=settings.background||{};
+  if(bg.mode==='image'&&bg.image_url){
+    document.documentElement.style.setProperty('--bg-overlay',`linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),url("${bg.image_url}")`);
+  }else{
+    document.documentElement.style.setProperty('--bg-overlay',PRESET_BG[bg.preset]||PRESET_BG.midnight);
+  }
+}
+
+function setFavicon(url){
+  const link = document.getElementById('app-favicon');
+  if(!link) return;
+  link.href = url || '';
+}
+
+function applyBranding(){
+  const branding = settings.branding || {};
+  document.title = branding.page_title || 'Bedmah.Local';
+  const titleEl = q('#hero-title');
+  if(titleEl) titleEl.textContent = branding.hero_title || 'Bedmah.local';
+  const symbolEl = q('#hero-symbol');
+  if(symbolEl) symbolEl.textContent = branding.hero_symbol || '✻';
+  setFavicon(branding.favicon_url || '');
+}
+
+async function api(url,opt={}){
+  const res=await fetch(url,opt);
+  const payload=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(payload.error||'Request failed');
+  return payload;
+}
+
+function filtered(){
+  const term=q('#search').value.trim().toLowerCase();
+  if(!term) return services;
+  return services.filter(s=>[s.name,s.group,...(s.tags||[])].join(' ').toLowerCase().includes(term));
+}
+
+function grouped(list){
+  const map={};
+  for(const s of list){
+    const g=(s.group||'General').trim()||'General';
+    if(!map[g]) map[g]=[];
+    map[g].push(s);
+  }
+  return map;
+}
+
+function setTheme(theme){
+  const t = theme === 'light' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', t);
+  localStorage.setItem(THEME_KEY, t);
+  const btn = q('#theme-toggle');
+  if (btn) btn.textContent = t === 'light' ? 'Тёмная тема' : 'Светлая тема';
+}
+
+function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  setTheme(saved);
+}
+
+function shortTag(tag, maxLen=6){
+  const text = String(tag || '').trim();
+  if (text.length <= maxLen) return text;
+  return text.slice(0, maxLen - 1) + '…';
+}
+
+function render(){
+  const box=q('#app');
+  const data=grouped(filtered());
+  const groups=Object.keys(data).sort((a,b)=>a.localeCompare(b,'ru'));
+  if(!groups.length){box.innerHTML='<div class="empty">Сервисы не найдены</div>';return;}
+
+  box.innerHTML=groups.map(g=>`<section><div class="group-title">${g}</div><div class="cards">${data[g].map(s=>`
+    <article class="card" data-id="${s.id}">
+      <div class="card-top">${s.icon?`<img class="icon" src="${s.icon}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><div class="icon icon-placeholder" style="display:none">•</div>`:'<div class="icon icon-placeholder">•</div>'}</div>
+      <div class="card-bottom">
+        <div class="name">${s.name}</div>
+        <div class="meta">${(s.tags||[]).slice(0,2).map(t=>`<span class="tag" title="${String(t).replace(/"/g,'&quot;')}">${shortTag(t,7)}</span>`).join('')}${(s.tags||[]).length>2?'<span class="tag">+'+((s.tags||[]).length-2)+'</span>':''}</div>
+      </div>
+    </article>`).join('')}</div></section>`).join('');
+
+  box.querySelectorAll('.card').forEach(el=>el.addEventListener('click',()=>{
+    const s=services.find(x=>x.id===el.dataset.id); if(!s) return;
+    if(s.new_tab) window.open(s.url,'_blank','noopener,noreferrer'); else window.location.href=s.url;
+  }));
+}
+
+async function boot(){
+  initTheme();
+  [services,settings]=await Promise.all([api('/api/services'),api('/api/settings')]);
+  applyBranding();
+  applyBackground();
+  render();
+  q('#search').addEventListener('input',render);
+  q('#theme-toggle').addEventListener('click',()=>{
+    const next = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    setTheme(next);
+  });
+}
+boot().catch(e=>alert(e.message));
+</script>
+</body></html>
