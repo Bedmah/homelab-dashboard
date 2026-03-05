@@ -40,18 +40,18 @@ def normalize_tags(tags):
 
 def normalize_service(payload, current_id=None):
     if not isinstance(payload, dict):
-        raise ValueError("Service payload must be object")
+        raise ValueError("Данные сервиса должны быть объектом")
     name = str(payload.get("name", "")).strip()
     url = str(payload.get("url", "")).strip()
     if not name or not url:
-        raise ValueError("Fields 'name' and 'url' are required")
+        raise ValueError("Поля 'name' и 'url' обязательны")
 
     return {
         "id": str(current_id or payload.get("id") or uuid.uuid4().hex),
         "name": name,
         "url": url,
         "icon": str(payload.get("icon", "")).strip(),
-        "group": str(payload.get("group", "General")).strip() or "General",
+        "group": str(payload.get("group", "Общее")).strip() or "Общее",
         "tags": normalize_tags(payload.get("tags", [])),
         "new_tab": bool(payload.get("new_tab", False)),
     }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Bedmah.Local Admin</title><link id="app-favicon-admin" rel="icon" href="">
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Bedmah.Local Админка</title><link id="app-favicon-admin" rel="icon" href="">
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
@@ -150,17 +150,17 @@ textarea{width:100%;min-height:220px;resize:vertical}
 </head><body>
 <div class="shell">
   <div class="topbar">
-    <div class="brand">Bedmah.Local / Admin</div>
-    <a class="btn" href="/" target="_blank" rel="noopener">Открыть Dashboard</a>
+    <div class="brand">Bedmah.Local / Админка</div>
+    <a class="btn" href="/" target="_blank" rel="noopener">Открыть дашборд</a>
   </div>
 
   <div class="layout">
     <section class="panel">
       <h2>Сервисы</h2>
       <input type="hidden" id="service-id">
-      <div class="row"><input id="name" placeholder="name"><input id="url" placeholder="url"></div>
-      <div class="row"><input id="icon" placeholder="icon URL"><input id="group" placeholder="group"></div>
-      <div class="row"><input id="tags" placeholder="tags через запятую"><label style="display:flex;align-items:center;gap:8px;padding:9px 0"><input id="new-tab" type="checkbox">new_tab</label></div>
+      <div class="row"><input id="name" placeholder="Название"><input id="url" placeholder="Ссылка (URL)"></div>
+      <div class="row"><input id="icon" placeholder="URL иконки"><input id="group" placeholder="Группа"></div>
+      <div class="row"><input id="tags" placeholder="Теги через запятую"><label style="display:flex;align-items:center;gap:8px;padding:9px 0"><input id="new-tab" type="checkbox">Открывать в новой вкладке</label></div>
       <div class="row1"><input id="icon-file" type="file" accept="image/*"></div>
       <div class="actions">
         <button id="save-service">Сохранить</button>
@@ -172,7 +172,7 @@ textarea{width:100%;min-height:220px;resize:vertical}
       <h2>Брендинг</h2>
       <div class="row1"><input id="brand-page-title" placeholder="Заголовок вкладки браузера (page title)"></div>
       <div class="row1"><input id="brand-hero-title" placeholder="Главная надпись на сайте"></div>
-      <div class="row"><input id="brand-hero-symbol" placeholder="Символ сверху (например ✻)"><input id="brand-favicon-url" placeholder="Favicon URL"></div>
+      <div class="row"><input id="brand-hero-symbol" placeholder="Символ сверху (например ✻)"><input id="brand-favicon-url" placeholder="URL favicon"></div>
       <div class="row1"><input id="brand-favicon-file" type="file" accept="image/*,.ico"></div>
       <div class="actions"><button id="save-branding">Сохранить брендинг</button></div>
 
@@ -185,7 +185,7 @@ textarea{width:100%;min-height:220px;resize:vertical}
 
     <section class="panel">
       <h2>Фон</h2>
-      <div class="row"><select id="bg-mode"><option value="preset">preset</option><option value="image">image</option></select><select id="bg-preset"><option value="midnight">midnight</option><option value="obsidian">obsidian</option><option value="graphite">graphite</option><option value="deepsea">deepsea</option></select></div>
+      <div class="row"><select id="bg-mode"><option value="preset">Готовая тема</option><option value="image">Изображение</option></select><select id="bg-preset"><option value="midnight">midnight</option><option value="obsidian">obsidian</option><option value="graphite">graphite</option><option value="deepsea">deepsea</option></select></div>
       <div class="row1"><input id="bg-image-url" placeholder="URL фонового изображения"></div>
       <div class="row1"><input id="bg-file" type="file" accept="image/*"></div>
       <div class="row1"><input id="bg-saved-new" placeholder="Добавить URL в сохраненные"></div>
@@ -200,7 +200,7 @@ textarea{width:100%;min-height:220px;resize:vertical}
     </section>
 
     <section class="panel panel-wide">
-      <h2>Raw JSON</h2>
+      <h2>Сырой JSON</h2>
       <textarea id="raw-json"></textarea>
       <div class="actions" style="margin-top:8px"><button id="load-raw">Загрузить</button><button id="save-raw">Сохранить</button></div>
     </section>
@@ -240,7 +240,7 @@ async function api(url,method='GET',data=null,headers={}){
     else{opt.headers['Content-Type']='application/json'; opt.body=JSON.stringify(data);} }
   const res=await fetch(url,opt);
   const payload=await res.json().catch(()=>({}));
-  if(!res.ok) throw new Error(payload.error||'Request failed');
+  if(!res.ok) throw new Error(payload.error||'Ошибка запроса');
   return payload;
 }
 
@@ -261,7 +261,7 @@ function setFavicon(url){
 
 function applyBranding(){
   const b = settings.branding || {};
-  document.title = (b.page_title || 'Bedmah.Local') + ' / Admin';
+  document.title = (b.page_title || 'Bedmah.Local') + ' / Админка';
   setFavicon(b.favicon_url || '');
 }
 
@@ -280,7 +280,7 @@ function renderList(){
   const host=q('#service-list');
   host.innerHTML=services.map(s=>`<div class="item" draggable="true" data-id="${s.id}">
     <div class="drag">⋮⋮</div>
-    <div class="svc-text"><div class="svc-name">${s.name}</div><div class="meta">${s.group||'General'} | ${(s.tags||[]).join(', ')}</div></div>
+    <div class="svc-text"><div class="svc-name">${s.name}</div><div class="meta">${s.group||'Общее'} | ${(s.tags||[]).join(', ')}</div></div>
     <div class="svc-buttons"><button data-a="e" data-id="${s.id}">Ред.</button><button data-a="d" data-id="${s.id}">Удал.</button></div>
   </div>`).join('');
 
@@ -353,7 +353,7 @@ async function upload(endpoint,file){
   const fd=new FormData(); fd.append('file',file);
   const res=await fetch(endpoint,{method:'POST',body:fd});
   const payload=await res.json().catch(()=>({}));
-  if(!res.ok) throw new Error(payload.error||'Upload failed');
+  if(!res.ok) throw new Error(payload.error||'Ошибка загрузки файла');
   return payload.url;
 }
 
@@ -365,7 +365,7 @@ async function saveService(){
     name:q('#name').value.trim(),
     url:q('#url').value.trim(),
     icon,
-    group:q('#group').value.trim()||'General',
+    group:q('#group').value.trim()||'Общее',
     tags:q('#tags').value,
     new_tab:q('#new-tab').checked
   };

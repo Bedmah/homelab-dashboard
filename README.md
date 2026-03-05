@@ -1,43 +1,43 @@
 ﻿# Homelab Dashboard
 
-Minimal self-hosted dashboard with web admin panel.
+Минималистичная self-hosted веб-панель с админкой.
 
-## Features
+## Возможности
 
-- Python backend (`python app.py`)
-- Dashboard with grouped service cards
-- Search by name / group / tags
-- Tags, open in new tab option
-- Admin panel on `/admin`
-- Add / edit / delete services
-- Drag & drop sorting
-- Raw JSON editor for `services.json`
-- Background settings (preset or image)
-- Branding settings (title, symbol, favicon)
-- Upload icons/backgrounds/favicons
-- Detailed logging with in-app log viewer
+- Backend на Python (`python app.py`)
+- Дашборд с карточками сервисов и группировкой
+- Поиск по названию / группе / тегам
+- Теги и открытие сервиса в новой вкладке
+- Админка на `/admin`
+- Добавление / редактирование / удаление сервисов
+- Drag & drop сортировка
+- Редактор сырого JSON для `services.json`
+- Настройки фона (пресет или изображение)
+- Настройки брендинга (заголовки, символ, favicon)
+- Загрузка иконок / фонов / favicon
+- Подробные логи и просмотр логов через админку
 
-## Requirements
+## Требования
 
 - Python 3.9+
 - Windows / Linux / macOS
 
-## Run
+## Запуск
 
 ```bash
 python app.py
 ```
 
-Open:
+Открыть:
 
-- Dashboard: `http://localhost:8080`
-- Admin: `http://localhost:8080/admin`
+- Дашборд: `http://localhost:8080`
+- Админка: `http://localhost:8080/admin`
 
-For LAN access use:
+Для локальной сети:
 
-- `http://<server-ip>:8080`
+- `http://<ip-сервера>:8080`
 
-## Project structure
+## Структура проекта
 
 ```text
 app.py
@@ -61,13 +61,13 @@ log/
 - `POST /api/upload-favicon`
 - `GET /api/logs`
 
-## Data files
+## Файлы данных
 
-- `services.json` — services list
-- `settings.json` — dashboard/admin settings
-- `uploads/` — user uploaded files
-- `log/` — application and access logs
+- `services.json` — список сервисов
+- `settings.json` — настройки дашборда и админки
+- `uploads/` — загруженные пользователем файлы
+- `log/` — логи приложения и доступа
 
-## License
+## Лицензия
 
-MIT License. See [LICENSE](LICENSE).
+MIT, см. [LICENSE](LICENSE).

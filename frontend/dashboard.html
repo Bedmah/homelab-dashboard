@@ -255,7 +255,7 @@ function applyBranding(){
 async function api(url,opt={}){
   const res=await fetch(url,opt);
   const payload=await res.json().catch(()=>({}));
-  if(!res.ok) throw new Error(payload.error||'Request failed');
+  if(!res.ok) throw new Error(payload.error||'Ошибка запроса');
   return payload;
 }
 
@@ -268,7 +268,7 @@ function filtered(){
 function grouped(list){
   const map={};
   for(const s of list){
-    const g=(s.group||'General').trim()||'General';
+    const g=(s.group||'Общее').trim()||'Общее';
     if(!map[g]) map[g]=[];
     map[g].push(s);
   }

@@ -108,7 +108,7 @@ class Handler(BaseHTTPRequestHandler):
             return json.loads(raw.decode("utf-8"))
         except Exception:
             app_log(logging.ERROR, "request.json.invalid", rid=getattr(self, "_rid", "-"), path=urlparse(self.path).path)
-            raise ValueError("Invalid JSON payload")
+            raise ValueError("Некорректный JSON")
 
     def _serve_upload(self, path):
         rel = path[len("/uploads/"):]
@@ -132,11 +132,11 @@ class Handler(BaseHTTPRequestHandler):
     def _handle_upload(self, dest_dir, prefix):
         ctype = self.headers.get("Content-Type", "")
         if "multipart/form-data" not in ctype:
-            self._send_json(400, {"error": "Content-Type must be multipart/form-data"})
+            self._send_json(400, {"error": "Content-Type должен быть multipart/form-data"})
             return
         file_data = parse_multipart_file(ctype, self._read_body())
         if not file_data:
-            self._send_json(400, {"error": "No file in request"})
+            self._send_json(400, {"error": "Файл не найден в запросе"})
             return
 
         _, ext = os.path.splitext(file_data["filename"])
@@ -167,14 +167,14 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/":
                 html = _read_frontend_file("dashboard.html")
                 if html is None:
-                    self._send_json(500, {"error": "frontend/dashboard.html not found"})
+                    self._send_json(500, {"error": "Файл frontend/dashboard.html не найден"})
                 else:
                     self._send_html(html)
                 return
             if path == "/admin":
                 html = _read_frontend_file("admin.html")
                 if html is None:
-                    self._send_json(500, {"error": "frontend/admin.html not found"})
+                    self._send_json(500, {"error": "Файл frontend/admin.html не найден"})
                 else:
                     self._send_html(html)
                 return
@@ -230,10 +230,10 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 self._send_json(200, payload)
                 return
-            self._send_json(404, {"error": "Not found"})
+            self._send_json(404, {"error": "Не найдено"})
         except Exception as error:
             app_log(logging.ERROR, "request.get.unhandled", rid=getattr(self, "_rid", "-"), error=repr(error), path=self.path)
-            self._send_json(500, {"error": "Internal server error"})
+            self._send_json(500, {"error": "Внутренняя ошибка сервера"})
         finally:
             self._end_request(getattr(self, "_last_status", 500))
 
@@ -268,7 +268,7 @@ class Handler(BaseHTTPRequestHandler):
                     payload = self._read_json()
                     ids = payload.get("ids")
                     if not isinstance(ids, list):
-                        raise ValueError("Field 'ids' must be array")
+                        raise ValueError("Поле 'ids' должно быть массивом")
                     data = load_services()
                     index = {item.get("id"): item for item in data}
                     ordered = [index[sid] for sid in ids if sid in index]
@@ -286,10 +286,10 @@ class Handler(BaseHTTPRequestHandler):
                     payload = self._read_json()
                     raw = payload.get("raw", "")
                     if not isinstance(raw, str):
-                        raise ValueError("Field 'raw' must be string")
+                        raise ValueError("Поле 'raw' должно быть строкой")
                     parsed = json.loads(raw)
                     if not isinstance(parsed, list):
-                        raise ValueError("services.json must be JSON array")
+                        raise ValueError("services.json должен быть JSON-массивом")
                     normalized = [normalize_service(item, current_id=item.get("id")) for item in parsed]
                     save_services(normalized)
                     app_log(logging.INFO, "services.raw.save", rid=getattr(self, "_rid", "-"), total=len(normalized), raw_size=len(raw))
@@ -299,7 +299,7 @@ class Handler(BaseHTTPRequestHandler):
                     self._send_json(400, {"error": str(error)})
                 except json.JSONDecodeError as error:
                     app_log(logging.WARNING, "services.raw.parse_error", rid=getattr(self, "_rid", "-"), error=str(error))
-                    self._send_json(400, {"error": f"JSON parse error: {error}"})
+                    self._send_json(400, {"error": f"Ошибка разбора JSON: {error}"})
                 return
 
             if path == "/api/settings":
@@ -349,10 +349,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._handle_upload(FAVICONS_DIR, "fav")
                 return
 
-            self._send_json(404, {"error": "Not found"})
+            self._send_json(404, {"error": "Не найдено"})
         except Exception as error:
             app_log(logging.ERROR, "request.post.unhandled", rid=getattr(self, "_rid", "-"), error=repr(error), path=self.path)
-            self._send_json(500, {"error": "Internal server error"})
+            self._send_json(500, {"error": "Внутренняя ошибка сервера"})
         finally:
             self._end_request(getattr(self, "_last_status", 500))
 
@@ -362,14 +362,14 @@ class Handler(BaseHTTPRequestHandler):
             path = urlparse(self.path).path
             match = re.fullmatch(r"/api/services/([^/]+)", path)
             if not match:
-                self._send_json(404, {"error": "Not found"})
+                self._send_json(404, {"error": "Не найдено"})
                 return
 
             sid = match.group(1)
             data = load_services()
             idx = next((i for i, item in enumerate(data) if str(item.get("id")) == sid), -1)
             if idx < 0:
-                self._send_json(404, {"error": "Service not found"})
+                self._send_json(404, {"error": "Сервис не найден"})
                 return
             try:
                 data[idx] = normalize_service(self._read_json(), current_id=sid)
@@ -389,7 +389,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(400, {"error": str(error)})
         except Exception as error:
             app_log(logging.ERROR, "request.put.unhandled", rid=getattr(self, "_rid", "-"), error=repr(error), path=self.path)
-            self._send_json(500, {"error": "Internal server error"})
+            self._send_json(500, {"error": "Внутренняя ошибка сервера"})
         finally:
             self._end_request(getattr(self, "_last_status", 500))
 
@@ -399,20 +399,20 @@ class Handler(BaseHTTPRequestHandler):
             path = urlparse(self.path).path
             match = re.fullmatch(r"/api/services/([^/]+)", path)
             if not match:
-                self._send_json(404, {"error": "Not found"})
+                self._send_json(404, {"error": "Не найдено"})
                 return
 
             sid = match.group(1)
             data = load_services()
             new_data = [item for item in data if str(item.get("id")) != sid]
             if len(new_data) == len(data):
-                self._send_json(404, {"error": "Service not found"})
+                self._send_json(404, {"error": "Сервис не найден"})
                 return
             save_services(new_data)
             app_log(logging.INFO, "service.delete", rid=getattr(self, "_rid", "-"), service_id=sid)
             self._send_json(200, {"ok": True})
         except Exception as error:
             app_log(logging.ERROR, "request.delete.unhandled", rid=getattr(self, "_rid", "-"), error=repr(error), path=self.path)
-            self._send_json(500, {"error": "Internal server error"})
+            self._send_json(500, {"error": "Внутренняя ошибка сервера"})
         finally:
             self._end_request(getattr(self, "_last_status", 500))
