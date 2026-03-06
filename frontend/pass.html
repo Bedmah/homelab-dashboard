@@ -1,0 +1,139 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Смена пароля AD</title>
+  <style>
+    :root{
+      --bg:#0b111a;
+      --panel:#111a28;
+      --line:#22324b;
+      --text:#e8effc;
+      --muted:#9fb0cc;
+      --ok:#1f8b4c;
+      --err:#a63b3b;
+      --btn:#1a2a40;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Segoe UI,Tahoma,sans-serif;
+      background:radial-gradient(circle at 30% -20%, #1a2b44, transparent 45%), var(--bg);
+      color:var(--text);
+      display:grid;
+      place-items:center;
+      padding:20px;
+    }
+    .card{
+      width:min(520px,100%);
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:18px;
+    }
+    .top-actions{display:flex;justify-content:flex-end;margin-bottom:8px}
+    .link-btn{
+      display:inline-block;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:8px 12px;
+      background:var(--btn);
+      color:var(--text);
+      text-decoration:none;
+      font-size:14px;
+    }
+    h1{margin:0 0 10px;font-size:22px}
+    p{margin:0 0 16px;color:var(--muted);font-size:14px}
+    label{display:block;margin:10px 0 6px;font-size:13px;color:var(--muted)}
+    input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px 12px;
+      background:#0d1522;
+      color:var(--text);
+      outline:none;
+    }
+    input:focus{border-color:#4f6ea1}
+    button{
+      margin-top:14px;
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px 12px;
+      background:var(--btn);
+      color:var(--text);
+      cursor:pointer;
+    }
+    .msg{margin-top:12px;padding:10px 12px;border-radius:10px;display:none;font-size:14px}
+    .msg.ok{display:block;background:rgba(31,139,76,.2);border:1px solid var(--ok)}
+    .msg.err{display:block;background:rgba(166,59,59,.2);border:1px solid var(--err)}
+  </style>
+</head>
+<body>
+  <form class="card" id="pass-form">
+    <div class="top-actions"><a class="link-btn" href="/">Главная</a></div>
+    <h1>Смена пароля AD</h1>
+    <p>Страница доступна через IIS-авторизацию. Введите логин и текущий пароль.</p>
+
+    <label for="username">Логин (например `BEDMAH\\user` или `user@bedmah.local`)</label>
+    <input id="username" name="username" required>
+
+    <label for="current-password">Текущий пароль</label>
+    <input id="current-password" name="current-password" type="password" required>
+
+    <label for="new-password">Новый пароль</label>
+    <input id="new-password" name="new-password" type="password" required>
+
+    <label for="confirm-password">Подтверждение нового пароля</label>
+    <input id="confirm-password" name="confirm-password" type="password" required>
+
+    <button type="submit">Сменить пароль</button>
+    <div id="msg" class="msg"></div>
+  </form>
+
+  <script>
+    const form = document.getElementById("pass-form");
+    const msg = document.getElementById("msg");
+
+    function show(text, ok){
+      msg.className = "msg " + (ok ? "ok" : "err");
+      msg.textContent = text;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.className = "msg";
+      msg.textContent = "";
+
+      const payload = {
+        username: document.getElementById("username").value.trim(),
+        current_password: document.getElementById("current-password").value,
+        new_password: document.getElementById("new-password").value,
+        confirm_password: document.getElementById("confirm-password").value
+      };
+
+      if (payload.new_password !== payload.confirm_password){
+        show("Подтверждение пароля не совпадает", false);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/pass", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Ошибка смены пароля");
+        show(data.message || "Пароль успешно изменен", true);
+        form.reset();
+      } catch (err){
+        show(err.message || "Ошибка смены пароля", false);
+      }
+    });
+  </script>
+</body>
+</html>

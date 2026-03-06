@@ -11,7 +11,7 @@ FAVICONS_DIR = os.path.join(UPLOADS_DIR, "favicons")
 LOG_DIR = os.path.join(BASE_DIR, "log")
 APP_LOG_FILE = os.path.join(LOG_DIR, "app.log")
 ACCESS_LOG_FILE = os.path.join(LOG_DIR, "access.log")
-HOST = "0.0.0.0"
+HOST = "127.0.0.1"
 PORT = 8080
 
 DEFAULT_SETTINGS = {

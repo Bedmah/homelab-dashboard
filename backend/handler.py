@@ -2,6 +2,7 @@ import json
 import logging
 import mimetypes
 import os
+import ctypes
 import re
 import time
 import uuid
@@ -38,6 +39,63 @@ def _read_frontend_file(filename):
         return None
     with open(full, "r", encoding="utf-8") as file_obj:
         return file_obj.read()
+
+
+def _change_password_windows(payload):
+    if os.name != "nt":
+        raise ValueError("Смена пароля AD поддерживается только на Windows")
+    if not isinstance(payload, dict):
+        raise ValueError("Неверный формат запроса")
+
+    username_raw = str(payload.get("username", "")).strip()
+    current_password = str(payload.get("current_password", ""))
+    new_password = str(payload.get("new_password", ""))
+    confirm_password = str(payload.get("confirm_password", ""))
+    domain_raw = str(payload.get("domain", "")).strip()
+
+    if not username_raw or not current_password or not new_password:
+        raise ValueError("Поля username, current_password и new_password обязательны")
+    if confirm_password and confirm_password != new_password:
+        raise ValueError("Подтверждение пароля не совпадает")
+    if len(new_password) < 8:
+        raise ValueError("Новый пароль должен быть не короче 8 символов")
+
+    domain = domain_raw
+    username = username_raw
+    if "\\" in username_raw:
+        left, right = username_raw.split("\\", 1)
+        domain = domain or left
+        username = right
+    elif "@" in username_raw:
+        left, right = username_raw.split("@", 1)
+        domain = domain or right
+        username = left
+
+    netapi32 = ctypes.windll.netapi32
+    netapi32.NetUserChangePassword.argtypes = [
+        ctypes.c_wchar_p,
+        ctypes.c_wchar_p,
+        ctypes.c_wchar_p,
+        ctypes.c_wchar_p,
+    ]
+    netapi32.NetUserChangePassword.restype = ctypes.c_uint
+
+    status = netapi32.NetUserChangePassword(domain or None, username, current_password, new_password)
+    if status == 0:
+        return
+
+    errors = {
+        5: "Доступ запрещен",
+        86: "Текущий пароль указан неверно",
+        2221: "Пользователь не найден",
+        2245: "Новый пароль не соответствует политике домена",
+        1325: "Новый пароль не соответствует политике домена",
+        1326: "Ошибка входа: проверьте логин/текущий пароль",
+        1355: "Домен не найден",
+        1909: "Учетная запись заблокирована",
+    }
+    message = errors.get(status, ctypes.FormatError(status).strip() or f"Код ошибки: {status}")
+    raise ValueError(message)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -175,6 +233,13 @@ class Handler(BaseHTTPRequestHandler):
                 html = _read_frontend_file("admin.html")
                 if html is None:
                     self._send_json(500, {"error": "Файл frontend/admin.html не найден"})
+                else:
+                    self._send_html(html)
+                return
+            if path == "/pass":
+                html = _read_frontend_file("pass.html")
+                if html is None:
+                    self._send_json(500, {"error": "Файл frontend/pass.html не найден"})
                 else:
                     self._send_html(html)
                 return
@@ -336,6 +401,28 @@ class Handler(BaseHTTPRequestHandler):
                     self._send_json(200, settings)
                 except ValueError as error:
                     app_log(logging.WARNING, "settings.save.validation", rid=getattr(self, "_rid", "-"), error=str(error))
+                    self._send_json(400, {"error": str(error)})
+                return
+            if path == "/api/pass":
+                payload = {}
+                try:
+                    payload = self._read_json()
+                    _change_password_windows(payload)
+                    app_log(
+                        logging.INFO,
+                        "password.change.success",
+                        rid=getattr(self, "_rid", "-"),
+                        username=str(payload.get("username", "")).strip(),
+                    )
+                    self._send_json(200, {"ok": True, "message": "Пароль успешно изменен"})
+                except ValueError as error:
+                    app_log(
+                        logging.WARNING,
+                        "password.change.validation",
+                        rid=getattr(self, "_rid", "-"),
+                        username=str(payload.get("username", "")).strip() if isinstance(payload, dict) else "",
+                        error=str(error),
+                    )
                     self._send_json(400, {"error": str(error)})
                 return
 
