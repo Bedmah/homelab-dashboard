@@ -1,6 +1,6 @@
 ﻿# Changelog
 
-## v2.2.0
+## v1.1.0
 
 ### Added
 
@@ -13,8 +13,3 @@
 
 - Default bind host switched to `127.0.0.1` for safer IIS reverse-proxy deployment.
 - `README.md` updated with deployment and security guidance.
-
-### Security / Privacy
-
-- `services.json` reset to an empty list before publication.
-- Runtime/user data remains excluded by `.gitignore` (`uploads/`, `log/`, `server.log`).

@@ -94,9 +94,55 @@ h2{margin:0 0 10px;font-size:14px;color:#dce3ef;font-weight:600}
   border:1px solid var(--line);
   border-radius:10px;
   background:rgba(0,0,0,.22);
+  transition:transform .16s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease;
+  transform-origin:center;
 }
 .item.dragging{opacity:.45}
-.drag{cursor:grab;color:#a4b0c1;font-size:18px;line-height:1}
+.drag-placeholder{
+  border:1px dashed rgba(255,255,255,.34);
+  background:rgba(255,255,255,.08);
+  border-radius:10px;
+  opacity:.55;
+  pointer-events:none;
+  animation:placeholderPulse 1.1s ease-in-out infinite;
+}
+.drag-placeholder .drag{
+  opacity:.8;
+}
+.drag-ghost{
+  position:fixed;
+  z-index:9999;
+  pointer-events:none;
+  opacity:.98;
+  transform:scale(1.03) rotate(-.2deg);
+  border-color:rgba(255,255,255,.4);
+  box-shadow:0 18px 34px rgba(0,0,0,.5);
+  background:rgba(28,34,44,.95);
+  filter:saturate(1.08);
+}
+.list.sorting .item:not(.dragging){
+  transition:transform .2s cubic-bezier(.22,.9,.35,1), box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+@keyframes placeholderPulse{
+  0%{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.24)}
+  50%{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.44)}
+  100%{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.24)}
+}
+.drag{
+  cursor:grab;
+  color:#a4b0c1;
+  font-size:26px;
+  line-height:1;
+  touch-action:none;
+  user-select:none;
+  display:inline-grid;
+  place-items:center;
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  background:rgba(255,255,255,.06);
+}
+.drag:active{cursor:grabbing; background:rgba(255,255,255,.14)}
 .svc-name{font-size:15px;line-height:1.2}
 .meta{font-size:12px;color:var(--muted);line-height:1.25}
 .svc-buttons{display:flex;gap:6px}
@@ -133,7 +179,7 @@ textarea{width:100%;min-height:220px;resize:vertical}
     gap:8px;
     padding:10px;
   }
-  .item .drag{grid-area:drag; padding-top:2px}
+  .item .drag{grid-area:drag; padding-top:0; width:44px; height:44px; font-size:30px}
   .item .svc-text{grid-area:text}
   .item .svc-buttons{
     grid-area:btns;
@@ -278,7 +324,7 @@ function fillForm(s=null){
 
 function renderList(){
   const host=q('#service-list');
-  host.innerHTML=services.map(s=>`<div class="item" draggable="true" data-id="${s.id}">
+  host.innerHTML=services.map(s=>`<div class="item" data-id="${s.id}">
     <div class="drag">⋮⋮</div>
     <div class="svc-text"><div class="svc-name">${s.name}</div><div class="meta">${s.group||'Общее'} | ${(s.tags||[]).join(', ')}</div></div>
     <div class="svc-buttons"><button data-a="e" data-id="${s.id}">Ред.</button><button data-a="d" data-id="${s.id}">Удал.</button></div>
@@ -289,13 +335,162 @@ function renderList(){
   setupDnD();
 }
 
+async function persistOrder(host){
+  const ids=[...host.querySelectorAll('.item')].map(x=>x.dataset.id);
+  await api('/api/reorder','POST',{ids});
+  await loadServices();
+}
+
 function setupDnD(){
-  const host=q('#service-list'); let drag=null;
-  host.querySelectorAll('.item').forEach(it=>{
-    it.addEventListener('dragstart',()=>{drag=it; it.classList.add('dragging');});
-    it.addEventListener('dragend',async()=>{it.classList.remove('dragging'); drag=null; const ids=[...host.querySelectorAll('.item')].map(x=>x.dataset.id); await api('/api/reorder','POST',{ids}); await loadServices();});
-    it.addEventListener('dragover',e=>{e.preventDefault(); if(!drag||drag===it)return; const r=it.getBoundingClientRect(); const after=e.clientY>r.top+r.height/2; if(after)it.after(drag); else it.before(drag);});
+  const host=q('#service-list');
+  let touchDrag = null;
+  let pointerId = null;
+  let placeholder = null;
+  let dragOffsetY = 0;
+  let fixedLeft = 0;
+  let ghost = null;
+  let ghostTargetTop = 0;
+  let ghostCurrentTop = 0;
+  let ghostFrame = null;
+
+  function animateReflow(mutator){
+    const nodes=[...host.children];
+    const first=new Map(nodes.map(n=>[n,n.getBoundingClientRect()]));
+    mutator();
+    const moved=[...host.children];
+    moved.forEach(n=>{
+      const a=first.get(n);
+      if(!a) return;
+      const b=n.getBoundingClientRect();
+      const dx=a.left-b.left;
+      const dy=a.top-b.top;
+      if(!dx && !dy) return;
+      n.style.transition='none';
+      n.style.transform=`translate(${dx}px,${dy}px)`;
+      requestAnimationFrame(()=>{
+        n.style.transition='transform .2s cubic-bezier(.22,.9,.35,1)';
+        n.style.transform='';
+      });
+    });
+  }
+
+  function tickGhost(){
+    if(!ghost) { ghostFrame=null; return; }
+    ghostCurrentTop += (ghostTargetTop - ghostCurrentTop) * 0.28;
+    if(Math.abs(ghostTargetTop - ghostCurrentTop) < 0.5){
+      ghostCurrentTop = ghostTargetTop;
+    }
+    ghost.style.top = `${ghostCurrentTop}px`;
+    if(ghostCurrentTop !== ghostTargetTop){
+      ghostFrame = requestAnimationFrame(tickGhost);
+    }else{
+      ghostFrame = null;
+    }
+  }
+
+  function moveGhostTo(top){
+    ghostTargetTop = top;
+    if(!ghostFrame) ghostFrame = requestAnimationFrame(tickGhost);
+  }
+
+  function placePlaceholderBefore(node){
+    if(!placeholder || placeholder === node || placeholder.nextSibling === node) return;
+    animateReflow(()=>node.before(placeholder));
+  }
+  function placePlaceholderAfter(node){
+    if(!placeholder || placeholder === node || placeholder.previousSibling === node) return;
+    animateReflow(()=>node.after(placeholder));
+  }
+  function placePlaceholderStart(){
+    if(!placeholder || host.firstElementChild === placeholder) return;
+    animateReflow(()=>host.prepend(placeholder));
+  }
+  function placePlaceholderEnd(){
+    if(!placeholder || host.lastElementChild === placeholder) return;
+    animateReflow(()=>host.append(placeholder));
+  }
+
+  const handles = host.querySelectorAll('.item .drag');
+  handles.forEach(handle=>{
+    handle.addEventListener('pointerdown',e=>{
+      if(e.pointerType === 'mouse' && e.button !== 0) return;
+      const item = e.currentTarget.closest('.item');
+      if(!item) return;
+      e.preventDefault();
+      host.classList.add('sorting');
+      const rect = item.getBoundingClientRect();
+      placeholder = item.cloneNode(true);
+      placeholder.classList.add('drag-placeholder');
+      item.before(placeholder);
+      touchDrag = item;
+      pointerId = e.pointerId;
+      dragOffsetY = e.clientY - rect.top;
+      fixedLeft = rect.left;
+      item.classList.add('dragging');
+      item.style.display = 'none';
+      ghost = item.cloneNode(true);
+      ghost.classList.add('drag-ghost');
+      ghost.style.left = `${fixedLeft}px`;
+      ghost.style.top = `${rect.top}px`;
+      ghostTargetTop = rect.top;
+      ghostCurrentTop = rect.top;
+      ghost.style.width = `${rect.width}px`;
+      document.body.appendChild(ghost);
+      if(handle.setPointerCapture) handle.setPointerCapture(pointerId);
+    });
   });
+
+  host.addEventListener('pointermove',e=>{
+    if(!touchDrag || e.pointerId !== pointerId) return;
+    e.preventDefault();
+    if(ghost) moveGhostTo(e.clientY - dragOffsetY);
+
+    const items = [...host.querySelectorAll('.item')].filter(x=>x!==touchDrag && x!==placeholder);
+    const target = items.find(it=>{
+      const r = it.getBoundingClientRect();
+      return e.clientY >= r.top && e.clientY <= r.bottom;
+    });
+    if(target){
+      const r = target.getBoundingClientRect();
+      const after = e.clientY > (r.top + r.height / 2);
+      if(after) placePlaceholderAfter(target); else placePlaceholderBefore(target);
+      return;
+    }
+    if(items.length && e.clientY < items[0].getBoundingClientRect().top){
+      placePlaceholderStart();
+      return;
+    }
+    if(items.length && e.clientY > items[items.length-1].getBoundingClientRect().bottom){
+      placePlaceholderEnd();
+    }
+  }, {passive:false});
+
+  async function finishPointerDrag(e){
+    if(!touchDrag || e.pointerId !== pointerId) return;
+    const finished = touchDrag;
+    const holder = placeholder;
+    const activeGhost = ghost;
+    touchDrag = null;
+    pointerId = null;
+    placeholder = null;
+    ghost = null;
+    host.classList.remove('sorting');
+    if(ghostFrame){
+      cancelAnimationFrame(ghostFrame);
+      ghostFrame = null;
+    }
+    finished.classList.remove('dragging');
+    finished.style.display = '';
+    if(activeGhost && activeGhost.parentNode){
+      activeGhost.parentNode.removeChild(activeGhost);
+    }
+    if(holder && holder.parentNode){
+      holder.replaceWith(finished);
+    }
+    await persistOrder(host);
+  }
+  host.addEventListener('pointerup', finishPointerDrag);
+  host.addEventListener('pointercancel', finishPointerDrag);
 }
 
 async function loadServices(){
