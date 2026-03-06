@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Смена пароля AD</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
     :root{
       --bg:#0b111a;
       --panel:#111a28;
@@ -19,7 +20,7 @@
     body{
       margin:0;
       min-height:100vh;
-      font-family:Segoe UI,Tahoma,sans-serif;
+      font-family:"Manrope","Segoe UI",Tahoma,sans-serif;
       background:radial-gradient(circle at 30% -20%, #1a2b44, transparent 45%), var(--bg);
       color:var(--text);
       display:grid;
@@ -55,6 +56,7 @@
       background:#0d1522;
       color:var(--text);
       outline:none;
+      font-family:inherit;
     }
     input:focus{border-color:#4f6ea1}
     button{
@@ -66,6 +68,7 @@
       background:var(--btn);
       color:var(--text);
       cursor:pointer;
+      font-family:inherit;
     }
     .msg{margin-top:12px;padding:10px 12px;border-radius:10px;display:none;font-size:14px}
     .msg.ok{display:block;background:rgba(31,139,76,.2);border:1px solid var(--ok)}

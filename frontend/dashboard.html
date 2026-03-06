@@ -2,7 +2,7 @@
 <html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Bedmah.Local</title><link id="app-favicon" rel="icon" href="">
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
 :root{
   --text:#f2f2f2;
   --muted:#a9a9a9;
@@ -60,6 +60,7 @@ body::after{
 input,select,textarea,button{
   border:1px solid var(--line); border-radius:10px; padding:9px 11px;
   background:rgba(8,10,14,.82); color:var(--text); font-size:14px; outline:none;
+  font-family:inherit;
 }
 input:focus,textarea:focus,select:focus{border-color:rgba(255,255,255,.34)}
 button{cursor:pointer; background:var(--btn); transition:all .16s ease}
@@ -85,7 +86,7 @@ a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); bor
 .hero-mark{font-size:32px; line-height:1; color:rgba(255,255,255,.82);}
 .hero h1{
   margin:12px 0 0;
-  font-family:"Space Grotesk","Manrope","Segoe UI",sans-serif;
+  font-family:inherit;
   font-size:60px;
   letter-spacing:.2px;
   font-weight:700;
@@ -93,7 +94,58 @@ a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); bor
 }
 .controls{margin:20px auto 0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
 .controls .search{flex:1; min-width:260px; max-width:520px;}
-.controls .search input{width:100%;}
+.controls .search input{
+  width:100%;
+  height:44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(180deg, rgba(10,12,18,.92), rgba(8,10,14,.92));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 6px 16px rgba(0,0,0,.24);
+  transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease;
+}
+.controls .search input::placeholder{color:rgba(220,227,240,.72)}
+.controls .search input:hover{
+  border-color:rgba(255,255,255,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 8px 20px rgba(0,0,0,.3);
+}
+.controls .search input:focus{
+  border-color:rgba(168,202,255,.78);
+  box-shadow:0 0 0 3px rgba(112,165,255,.2), 0 10px 24px rgba(0,0,0,.34);
+  transform:translateY(-1px);
+}
+.controls .icon-btn{
+  width:44px;
+  height:44px;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  line-height:1;
+  border-radius:12px;
+  border-color:rgba(255,255,255,.24);
+  background:linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08));
+  box-shadow:0 6px 16px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.1);
+  transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+.controls .icon-btn:hover{
+  transform:translateY(-2px) scale(1.02);
+  border-color:rgba(255,255,255,.5);
+  box-shadow:0 10px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.controls .icon-btn:active{
+  transform:translateY(0) scale(.98);
+}
+.controls > *{
+  animation:controlsRise .34s ease both;
+}
+.controls > :nth-child(2){animation-delay:.03s}
+.controls > :nth-child(3){animation-delay:.06s}
+.controls > :nth-child(4){animation-delay:.09s}
+@keyframes controlsRise{
+  from{opacity:0; transform:translateY(8px)}
+  to{opacity:1; transform:translateY(0)}
+}
 .groups{display:grid; gap:14px; margin-top:8px;}
 .groups > section{display:block; width:100%;}
 .group-title{
@@ -113,9 +165,9 @@ a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); bor
 }
 .card{
   width:180px;
-  height:202px;
+  height:242px;
   display:grid;
-  grid-template-rows:1fr 70px;
+  grid-template-rows:176px 66px;
   align-items:stretch;
   gap:0;
   padding:0;
@@ -128,13 +180,15 @@ a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); bor
 }
 .card:hover{transform:translateY(-2px); background:rgba(255,255,255,.05); border-color:#fff; box-shadow:0 8px 18px rgba(0,0,0,.38);}
 .card-top{
-  display:grid;
-  place-items:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
   background:linear-gradient(180deg, rgba(25,25,25,.88), rgba(15,15,15,.9));
 }
 .icon{
-  width:108px;
-  height:108px;
+  width:136px;
+  height:136px;
   border-radius:16px;
   object-fit:contain;
   background:transparent;
@@ -152,17 +206,17 @@ a.btn{color:var(--text); text-decoration:none; border:1px solid var(--line); bor
   color:#d7d7d7;
 }
 .card-bottom{
-  padding:6px 8px;
+  padding:3px 7px;
   background:linear-gradient(180deg, rgba(66,66,66,.88), rgba(56,56,56,.92));
   border-top:1px solid rgba(255,255,255,.15);
   display:flex;
   flex-direction:column;
   justify-content:center;
-  gap:4px;
+  gap:1px;
 }
-.name{color:#fff;font-size:18px;line-height:1.15;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.meta{display:flex;gap:4px;justify-content:center;overflow:hidden;margin-top:0;}
-.meta .tag{font-size:11px;line-height:14px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.2);color:#f3f3f3;max-width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.name{color:#fff;font-size:22px;line-height:1.08;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.meta{display:flex;gap:4px;justify-content:center;overflow:hidden;margin-top:4px;}
+.meta .tag{font-size:10px;line-height:13px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.2);color:#f3f3f3;max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .empty{padding:20px 12px; text-align:center; color:var(--muted)}
 body[data-theme="light"] .hero h1{color:#151515}
 body[data-theme="light"] .hero-mark{color:rgba(0,0,0,.62)}
@@ -172,6 +226,23 @@ body[data-theme="light"] .card-top{background:linear-gradient(180deg, rgba(248,2
 body[data-theme="light"] .card-bottom{background:linear-gradient(180deg, rgba(224,224,224,.96), rgba(212,212,212,.96)); border-top-color:rgba(0,0,0,.12)}
 body[data-theme="light"] .name{color:#151515}
 body[data-theme="light"] .meta .tag{color:#1b1b1b;background:rgba(0,0,0,.12)}
+body[data-theme="light"] .controls .search input{
+  background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(247,247,247,.98));
+  border-color:rgba(0,0,0,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 6px 16px rgba(0,0,0,.1);
+}
+body[data-theme="light"] .controls .search input::placeholder{color:rgba(40,40,40,.58)}
+body[data-theme="light"] .controls .search input:hover{border-color:rgba(0,0,0,.34)}
+body[data-theme="light"] .controls .search input:focus{
+  border-color:rgba(58,117,220,.8);
+  box-shadow:0 0 0 3px rgba(74,137,247,.18), 0 8px 20px rgba(0,0,0,.14);
+}
+body[data-theme="light"] .controls .icon-btn{
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(236,236,236,.98));
+  border-color:rgba(0,0,0,.2);
+  box-shadow:0 6px 14px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.92);
+}
+body[data-theme="light"] .controls .icon-btn:hover{border-color:rgba(0,0,0,.38)}
 @media (max-width:760px){
   .dashboard-shell{width:100%; max-width:none; margin:10px auto 18px; padding:0 12px}
   .hero{margin:10px 0 10px}
@@ -180,26 +251,29 @@ body[data-theme="light"] .meta .tag{color:#1b1b1b;background:rgba(0,0,0,.12)}
   .controls{
     width:100%;
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:8px;
     justify-content:stretch;
   }
   .controls .search{min-width:100%; max-width:none; grid-column:1 / -1}
   .controls .search input, .controls button, .controls a.btn{width:100%; text-align:center}
+  .controls .icon-btn{height:44px; font-size:20px}
   .cards{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; justify-content:stretch}
-  .card{width:auto; height:214px; grid-template-rows:1fr 78px}
-  .icon{width:110px;height:110px}
-  .name{font-size:18px}
-  .meta{display:flex; gap:4px; margin-top:4px}
-  .meta .tag{font-size:11px; line-height:14px; padding:0 6px; max-width:66px}
+  .card{width:auto; height:246px; grid-template-rows:182px 64px}
+  .card-top{padding:14px}
+  .icon{width:138px;height:138px}
+  .name{font-size:21px}
+  .meta{display:flex; gap:4px; margin-top:6px}
+  .meta .tag{font-size:10px; line-height:13px; padding:0 6px; max-width:64px}
 }
 @media (max-width:420px){
   .cards{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; justify-content:stretch}
-  .card{width:auto; height:194px; grid-template-rows:1fr 68px}
-  .icon{width:96px;height:96px}
-  .name{font-size:16px}
-  .meta{display:flex; gap:3px; margin-top:3px}
-  .meta .tag{font-size:10px; line-height:13px; padding:0 5px; max-width:58px}
+  .card{width:auto; height:224px; grid-template-rows:164px 60px}
+  .card-top{padding:12px}
+  .icon{width:122px;height:122px}
+  .name{font-size:20px}
+  .meta{display:flex; gap:3px; margin-top:5px}
+  .meta .tag{font-size:9px; line-height:12px; padding:0 5px; max-width:54px}
 }
 </style>
 </head><body>
@@ -209,9 +283,9 @@ body[data-theme="light"] .meta .tag{color:#1b1b1b;background:rgba(0,0,0,.12)}
     <h1 id="hero-title">Bedmah.local</h1>
     <div class="controls">
       <div class="search"><input id="search" placeholder="Поиск по названию / группе / тегам"></div>
-      <button id="theme-toggle" type="button">Светлая тема</button>
-      <a class="btn" href="/admin" target="_blank" rel="noopener">Админка</a>
-      <a class="btn" href="/pass">Сменить пароль</a>
+      <button id="theme-toggle" class="icon-btn" type="button" title="Theme" aria-label="Theme">&#9728;</button>
+      <a class="btn icon-btn" href="/admin" target="_blank" rel="noopener" title="Admin Panel" aria-label="Admin Panel">&#128736;</a>
+      <a class="btn icon-btn" href="/pass" title="Change Password" aria-label="Change Password">&#128273;</a>
     </div>
   </div>
   <div id="app" class="groups"></div>
@@ -281,7 +355,12 @@ function setTheme(theme){
   document.body.setAttribute('data-theme', t);
   localStorage.setItem(THEME_KEY, t);
   const btn = q('#theme-toggle');
-  if (btn) btn.textContent = t === 'light' ? 'Тёмная тема' : 'Светлая тема';
+  if (btn){
+    const isLight = t === 'light';
+    btn.innerHTML = isLight ? '&#9790;' : '&#9728;';
+    btn.title = isLight ? 'Dark Theme' : 'Light Theme';
+    btn.setAttribute('aria-label', isLight ? 'Dark Theme' : 'Light Theme');
+  }
 }
 
 function initTheme(){
