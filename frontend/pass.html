@@ -3,107 +3,334 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Смена пароля AD</title>
+  <title>Смена пароля</title>
+  <link id="app-favicon-pass" rel="icon" href="">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
     :root{
-      --bg:#0b111a;
-      --panel:#111a28;
-      --line:#22324b;
-      --text:#e8effc;
-      --muted:#9fb0cc;
+      --text:#f2f2f2;
+      --muted:#a9a9a9;
+      --line:rgba(255,255,255,.14);
+      --panel:rgba(10,10,10,.82);
+      --btn:rgba(255,255,255,.12);
       --ok:#1f8b4c;
       --err:#a63b3b;
-      --btn:#1a2a40;
+      --bg-overlay:radial-gradient(circle at 40% -20%, rgba(255,255,255,.04), transparent 52%), linear-gradient(180deg, #050505, #0b0b0b 60%, #050505);
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      min-height:100vh;
-      font-family:"Manrope","Segoe UI",Tahoma,sans-serif;
-      background:radial-gradient(circle at 30% -20%, #1a2b44, transparent 45%), var(--bg);
       color:var(--text);
+      font-family:"Manrope","Segoe UI",Tahoma,sans-serif;
+      min-height:100vh;
+      background:#05070b;
       display:grid;
       place-items:center;
-      padding:20px;
+      padding:24px 12px;
     }
-    .card{
-      width:min(520px,100%);
-      background:var(--panel);
+    body[data-theme="light"]{
+      --text:#121212;
+      --muted:#5d5d5d;
+      --line:rgba(0,0,0,.14);
+      --panel:rgba(255,255,255,.84);
+      --btn:rgba(0,0,0,.07);
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:var(--bg-overlay);
+      background-size:cover;
+      filter:contrast(1.08) saturate(.9);
+      z-index:-2;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 2px, transparent 2px 5px),
+                 radial-gradient(circle at 50% 0%, rgba(255,255,255,.06), transparent 55%);
+      mix-blend-mode:soft-light;
+      z-index:-1;
+    }
+    .shell{
+      width:min(560px,100%);
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:18px;
+      border-radius:16px;
+      background:var(--panel);
+      backdrop-filter:blur(9px);
+      box-shadow:0 20px 45px rgba(0,0,0,.35);
+      padding:16px;
     }
-    .top-actions{display:flex;justify-content:flex-end;margin-bottom:8px}
-    .link-btn{
-      display:inline-block;
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+    .hero-symbol{font-size:18px; opacity:.9}
+    .brand-title{
+      font-weight:700;
+      font-size:14px;
+      letter-spacing:.3px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    a.btn,button.btn{
       border:1px solid var(--line);
       border-radius:10px;
-      padding:8px 12px;
+      padding:8px 11px;
       background:var(--btn);
       color:var(--text);
       text-decoration:none;
-      font-size:14px;
+      cursor:pointer;
+      font-family:inherit;
+      font-size:13px;
     }
-    h1{margin:0 0 10px;font-size:22px}
-    p{margin:0 0 16px;color:var(--muted);font-size:14px}
-    label{display:block;margin:10px 0 6px;font-size:13px;color:var(--muted)}
+    h1{
+      margin:8px 0 6px;
+      font-size:26px;
+      line-height:1.15;
+    }
+    p.sub{
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+    label{
+      display:block;
+      margin:10px 0 6px;
+      font-size:13px;
+      color:var(--muted);
+    }
     input{
       width:100%;
       border:1px solid var(--line);
       border-radius:10px;
       padding:10px 12px;
-      background:#0d1522;
+      background:rgba(8,10,14,.82);
       color:var(--text);
+      font-family:inherit;
+      font-size:14px;
       outline:none;
-      font-family:inherit;
     }
-    input:focus{border-color:#4f6ea1}
-    button{
-      margin-top:14px;
+    body[data-theme="light"] input{
+      background:rgba(255,255,255,.94);
+    }
+    input:focus{border-color:rgba(168,202,255,.78)}
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .submit{
       width:100%;
-      border:1px solid var(--line);
-      border-radius:10px;
-      padding:10px 12px;
-      background:var(--btn);
-      color:var(--text);
-      cursor:pointer;
-      font-family:inherit;
+      margin-top:14px;
+      padding:11px 12px;
+      font-weight:700;
     }
-    .msg{margin-top:12px;padding:10px 12px;border-radius:10px;display:none;font-size:14px}
-    .msg.ok{display:block;background:rgba(31,139,76,.2);border:1px solid var(--ok)}
-    .msg.err{display:block;background:rgba(166,59,59,.2);border:1px solid var(--err)}
+    .meter{
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .msg{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:10px;
+      display:none;
+      font-size:14px;
+      line-height:1.35;
+      border:1px solid transparent;
+    }
+    .msg.ok{
+      display:block;
+      background:rgba(31,139,76,.2);
+      border-color:var(--ok);
+    }
+    .msg.err{
+      display:block;
+      background:rgba(166,59,59,.2);
+      border-color:var(--err);
+    }
+    @media (max-width:680px){
+      .shell{padding:12px}
+      .topbar{align-items:flex-start; flex-direction:column}
+      .actions{width:100%; justify-content:stretch}
+      .actions .btn{flex:1; text-align:center}
+      .grid{grid-template-columns:1fr}
+      h1{font-size:22px}
+    }
   </style>
 </head>
 <body>
-  <form class="card" id="pass-form">
-    <div class="top-actions"><a class="link-btn" href="/">Главная</a></div>
-    <h1>Смена пароля AD</h1>
-    <p>Страница доступна через IIS-авторизацию. Введите логин и текущий пароль.</p>
+  <form class="shell" id="pass-form" autocomplete="off">
+    <div class="topbar">
+      <div class="brand">
+        <div id="hero-symbol" class="hero-symbol">✻</div>
+        <div id="hero-title" class="brand-title">Bedmah.local</div>
+      </div>
+      <div class="actions">
+        <button id="theme-toggle" class="btn" type="button" aria-label="Theme">☀</button>
+        <a class="btn" href="/">Главная</a>
+        <a class="btn" href="/admin">Админка</a>
+      </div>
+    </div>
 
-    <label for="username">Логин (например `BEDMAH\\user` или `user@bedmah.local`)</label>
-    <input id="username" name="username" required>
+    <h1>Смена пароля</h1>
+    <p class="sub">Фон и брендинг синхронизированы с настройками админ-панели. Для домена используйте формат <b>DOMAIN\user</b> или <b>user@domain.local</b>.</p>
 
-    <label for="current-password">Текущий пароль</label>
-    <input id="current-password" name="current-password" type="password" required>
+    <label for="username">Логин</label>
+    <input id="username" name="username" placeholder="BEDMAH\user или user@bedmah.local" required>
 
-    <label for="new-password">Новый пароль</label>
-    <input id="new-password" name="new-password" type="password" required>
+    <label for="domain">Домен (опционально)</label>
+    <input id="domain" name="domain" placeholder="BEDMAH или bedmah.local">
+
+    <div class="grid">
+      <div>
+        <label for="current-password">Текущий пароль</label>
+        <input id="current-password" name="current-password" type="password" required>
+      </div>
+      <div>
+        <label for="new-password">Новый пароль</label>
+        <input id="new-password" name="new-password" type="password" minlength="8" required>
+      </div>
+    </div>
 
     <label for="confirm-password">Подтверждение нового пароля</label>
-    <input id="confirm-password" name="confirm-password" type="password" required>
+    <input id="confirm-password" name="confirm-password" type="password" minlength="8" required>
+    <div id="meter" class="meter">Минимальная длина: 8 символов</div>
 
-    <button type="submit">Сменить пароль</button>
+    <button class="btn submit" type="submit">Сменить пароль</button>
     <div id="msg" class="msg"></div>
   </form>
 
   <script>
+    const PRESET_BG = {
+      midnight: "radial-gradient(circle at 40% -20%, rgba(255,255,255,.06), transparent 50%), linear-gradient(180deg, #07090d, #0b0e13 60%, #07090d)",
+      obsidian: "radial-gradient(circle at 50% -10%, rgba(160,160,160,.08), transparent 45%), linear-gradient(180deg,#050505,#111 60%,#050505)",
+      graphite: "radial-gradient(circle at 50% 0%, rgba(180,180,180,.06), transparent 55%), linear-gradient(180deg,#0a0b0f,#1b1f25 65%,#0a0b0f)",
+      deepsea: "radial-gradient(circle at 45% -10%, rgba(75,117,145,.16), transparent 50%), linear-gradient(180deg,#051019,#0a1c2a 65%,#06111a)"
+    };
+    const THEME_KEY = "bedmah_theme";
+    let settings = {
+      background: {mode: "preset", preset: "midnight", image_url: ""},
+      branding: {page_title: "Bedmah.Local", hero_title: "Bedmah.local", hero_symbol: "✻", favicon_url: ""}
+    };
+
     const form = document.getElementById("pass-form");
     const msg = document.getElementById("msg");
+    const meter = document.getElementById("meter");
+    const newPassword = document.getElementById("new-password");
+    const confirmPassword = document.getElementById("confirm-password");
+
+    function setFavicon(url){
+      const link = document.getElementById("app-favicon-pass");
+      if (link) link.href = url || "";
+    }
+
+    function applyBackground(){
+      const bg = settings.background || {};
+      if (bg.mode === "image" && bg.image_url){
+        document.documentElement.style.setProperty("--bg-overlay", `linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),url("${bg.image_url}")`);
+      } else {
+        document.documentElement.style.setProperty("--bg-overlay", PRESET_BG[bg.preset] || PRESET_BG.midnight);
+      }
+    }
+
+    function applyBranding(){
+      const branding = settings.branding || {};
+      document.title = (branding.page_title || "Bedmah.Local") + " / Смена пароля";
+      const heroTitle = document.getElementById("hero-title");
+      const heroSymbol = document.getElementById("hero-symbol");
+      if (heroTitle) heroTitle.textContent = branding.hero_title || "Bedmah.local";
+      if (heroSymbol) heroSymbol.textContent = branding.hero_symbol || "✻";
+      setFavicon(branding.favicon_url || "");
+    }
+
+    function setTheme(theme){
+      const t = theme === "light" ? "light" : "dark";
+      document.body.setAttribute("data-theme", t);
+      localStorage.setItem(THEME_KEY, t);
+      const btn = document.getElementById("theme-toggle");
+      if (btn){
+        const isLight = t === "light";
+        btn.textContent = isLight ? "☾" : "☀";
+        btn.title = isLight ? "Темная тема" : "Светлая тема";
+      }
+    }
+
+    function initTheme(){
+      const saved = localStorage.getItem(THEME_KEY) || "dark";
+      setTheme(saved);
+    }
 
     function show(text, ok){
       msg.className = "msg " + (ok ? "ok" : "err");
       msg.textContent = text;
+    }
+
+    function updateMeter(){
+      const value = newPassword.value || "";
+      const hasLength = value.length >= 8;
+      const hasDigit = /\d/.test(value);
+      const hasLetter = /[A-Za-zА-Яа-я]/.test(value);
+      let score = 0;
+      if (hasLength) score += 1;
+      if (hasDigit) score += 1;
+      if (hasLetter) score += 1;
+
+      if (!value){
+        meter.textContent = "Минимальная длина: 8 символов";
+        return;
+      }
+      if (score <= 1){
+        meter.textContent = "Слабый пароль";
+      } else if (score === 2){
+        meter.textContent = "Средний пароль";
+      } else {
+        meter.textContent = "Хороший пароль";
+      }
+    }
+
+    async function apiSettings(){
+      const res = await fetch("/api/settings");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Не удалось загрузить настройки");
+      return data;
+    }
+
+    async function boot(){
+      initTheme();
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        const next = document.body.getAttribute("data-theme") === "light" ? "dark" : "light";
+        setTheme(next);
+      });
+      newPassword.addEventListener("input", updateMeter);
+      confirmPassword.addEventListener("input", updateMeter);
+      updateMeter();
+
+      try {
+        settings = await apiSettings();
+      } catch (_) {}
+      applyBranding();
+      applyBackground();
     }
 
     form.addEventListener("submit", async (e) => {
@@ -113,13 +340,18 @@
 
       const payload = {
         username: document.getElementById("username").value.trim(),
+        domain: document.getElementById("domain").value.trim(),
         current_password: document.getElementById("current-password").value,
-        new_password: document.getElementById("new-password").value,
-        confirm_password: document.getElementById("confirm-password").value
+        new_password: newPassword.value,
+        confirm_password: confirmPassword.value
       };
 
       if (payload.new_password !== payload.confirm_password){
         show("Подтверждение пароля не совпадает", false);
+        return;
+      }
+      if (payload.new_password.length < 8){
+        show("Новый пароль должен быть не короче 8 символов", false);
         return;
       }
 
@@ -133,10 +365,13 @@
         if (!res.ok) throw new Error(data.error || "Ошибка смены пароля");
         show(data.message || "Пароль успешно изменен", true);
         form.reset();
+        updateMeter();
       } catch (err){
         show(err.message || "Ошибка смены пароля", false);
       }
     });
+
+    boot();
   </script>
 </body>
 </html>
